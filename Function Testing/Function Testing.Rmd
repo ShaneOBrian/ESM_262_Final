@@ -1,0 +1,59 @@
+---
+title: "Final Assignment Markdown"
+author: "Matilde Saucedo & Shane O'Brian"
+date: "2024-03-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(purrr)
+```
+
+# generate some values for a sample
+``` {r height, width, and depth}
+heights <- sample(1:10, 100, replace = TRUE)
+widths <- sample(1:10, 100, replace = TRUE)
+depths <- sample(1:10, 100, replace = TRUE)
+```
+
+```{r }
+results <- list()
+```
+
+```{r for looping}
+for(i in seq_along(heights)) {
+  result <- RectangleProperties(height = heights[i], width = widths[i], depth = depths[i %% length(depths) + 1])
+  results[[i]] <- result
+}
+```
+
+```{r results}
+results_purrr <- map2(heights, widths, ~RectangleProperties(height = .x, width = .y, depth = depths[.y %% length(depths) + 1]))
+```
+
+```{r plotting}
+volumes <- sapply(results_purrr, function(x) x$volume)
+plot_data <- data.frame(Height = heights, Volume = volumes)
+
+ggplot(plot_data, aes(x = Height, y = Volume)) +
+  geom_line() + geom_point() +
+  theme_minimal() +
+  ggtitle("Volume vs. Height for Rectangular Prisms") +
+  xlab("Height (cm)") +
+  ylab("Volume (cm^3)")
+```
+
+```{r testthat function}
+library(testthat)
+
+# Example test file content
+test_that("Function returns expected volume", {
+  expect_equal(RectangleProperties(1, 1, 1)$volume, 1)
+})
+
+test_that("Function errors on negative dimensions", {
+  expect_error(RectangleProperties(-1, 1, 1))
+})
+```
